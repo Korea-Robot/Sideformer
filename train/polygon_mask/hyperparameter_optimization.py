@@ -1,6 +1,9 @@
 # hyperparameter_optimization.py - 하이퍼파라미터 최적화를 위한 DDP 학습 코드
 
 import os
+
+os.environ["CUDA_VISIBLE_DEVICES"] = "3,4,5"
+
 import argparse
 import json
 import torch
@@ -119,10 +122,12 @@ def setup_logging(rank: int, log_dir: str = "logs"):
         logging.getLogger().name = str(rank)
 
 
+
 def setup_ddp(rank: int, world_size: int, master_addr: str = 'localhost', master_port: str = '12355'):
     """DDP 환경 설정"""
     os.environ['MASTER_ADDR'] = master_addr
     os.environ['MASTER_PORT'] = master_port
+    
     
     # 시스템 및 네트워크 환경에 따라 주석 처리 또는 수정
     # os.environ['NCCL_P2P_DISABLE'] = '1'

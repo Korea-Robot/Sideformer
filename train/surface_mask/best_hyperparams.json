@@ -1,0 +1,9 @@
+{
+    "batch_size": 64,
+    "learning_rate": 3.718364180573207e-05,
+    "weight_decay": 2.5081156860452325e-06,
+    "model_name": "nvidia/mit-b0",
+    "optimizer": "adam",
+    "scheduler": "step",
+    "grad_clip": 0.4715567522838075
+}

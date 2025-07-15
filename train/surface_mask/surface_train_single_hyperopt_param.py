@@ -1,6 +1,19 @@
 import os
-os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3,4,5"
+# os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3,4,5"
+
+
+
+### best hyper param
+# {
+#     "batch_size": 64,
+#     "learning_rate": 3.718364180573207e-05,
+#     "weight_decay": 2.5081156860452325e-06,
+#     "model_name": "nvidia/mit-b0",
+#     "optimizer": "adam",
+#     "scheduler": "step",
+#     "grad_clip": 0.4715567522838075
+# }
 
 import json
 import torch
@@ -175,7 +188,7 @@ def visualize_predictions(model, valid_loader, device, epoch, save_dir="lrup_val
             plt.close(fig)
 
 # --- 학습 설정 ---
-device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu") # 첫번째 지정 GPU 사용
+device = torch.device("cuda:5" if torch.cuda.is_available() else "cpu") # 첫번째 지정 GPU 사용
 
 # 모델 생성 (중복된 모델 정의 부분 제거)
 num_classes = 7
@@ -188,13 +201,30 @@ model = SegformerForSemanticSegmentation.from_pretrained(
 
 model.to(device)
 
+
+# {
+#     "batch_size": 64,
+#     "learning_rate": 3.718364180573207e-05,
+#     "weight_decay": 2.5081156860452325e-06,
+#     "model_name": "nvidia/mit-b0",
+#     "optimizer": "adam",
+#     "scheduler": "step",
+#     "grad_clip": 0.4715567522838075
+# }
+
 # 하이퍼파라미터
 epochs = 100
-lr = 5e-4
-weight_decay = 1e-4
+lr = 3.7e-5
+weight_decay = 2.5e-06
 
-optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
+# optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
+optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
+
+from torch.optim import lr_scheduler
+
+# 예: 10 에폭마다 학습률을 감쇠시키며 감쇠 계수는 0.1
+scheduler = lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
 
 # --- WandB 초기화 ---
 wandb.init(project="segmentation_project", name=f"fixed_run_0707_with_viz")
@@ -221,6 +251,8 @@ for epoch in range(epochs):
         # 수정: 'outpus' -> 'outputs' 오타 수정
         loss = outputs.loss
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.4716)
+
         optimizer.step()
         
         running_loss += loss.item()
@@ -253,7 +285,7 @@ for epoch in range(epochs):
     if val_loss < best_val_loss:
         best_val_loss = val_loss
         os.makedirs("ckpts", exist_ok=True)
-        torch.save(model.state_dict(), f"ckpts/best_seg_model.pth")
+        torch.save(model.state_dict(), f"ckpts_lrup/best_seg_model.pth")
         print(f"Best model saved! Val Loss: {val_loss:.4f}")
     
     # 주기적 체크포인트 저장

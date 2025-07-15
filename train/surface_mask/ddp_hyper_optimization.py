@@ -443,7 +443,7 @@ def objective(trial):
     # 하이퍼파라미터 샘플링
     hyperparams = {
         'batch_size': trial.suggest_categorical('batch_size', [16, 32,64]),
-        'learning_rate': trial.suggest_float('learning_rate', 1e-5, 1e-4,1e-3, log=True),
+        'learning_rate': trial.suggest_float('learning_rate', 1e-5, 1e-4, log=True),
         'weight_decay': trial.suggest_float('weight_decay', 1e-5, 1e-2, log=True),
         'model_name': trial.suggest_categorical('model_name', [
             'nvidia/mit-b0'# , 'nvidia/mit-b1', 'nvidia/mit-b2'
